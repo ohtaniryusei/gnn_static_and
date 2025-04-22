@@ -20,8 +20,8 @@ def train():
 
     # データ読み込み（PyG Temporal）
     dataset, static_graph = load_pyg_temporal_dataset_from_csv(
-        trans_path='/workspaces/gnn_static_and/gnn_research/data/transactions.csv',
-        static_path='/workspaces/gnn_static_and/gnn_research/data/transfers.csv',
+        trans_path='/workspaces/gnn_static_and/data/transactions.csv',
+        static_path='/workspaces/gnn_static_and/data/transfers.csv',
         in_dim=in_dim
     )
 
