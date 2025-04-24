@@ -5,14 +5,14 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.metrics import roc_auc_score
 
-from full_model import FullModel_TGCN
+from full_model import FullModel
 from utils.tgat_data_loader import load_pyg_temporal_dataset_from_csv
 from static_gnn import StaticGraphEncoder
 
 def train():
     # モデル定義
     in_dim = 128
-    model = FullModel_TGCN(in_dim=in_dim, out_dim=128)
+    model = FullModel(in_dim=in_dim, out_dim=128)
     static_encoder = StaticGraphEncoder(in_channels=in_dim, hidden_channels=128, out_channels=128)
 
     criterion = nn.BCELoss()
@@ -38,8 +38,21 @@ def train():
             # 静的GNNによるユーザー埋め込み（送金グラフ）
             h_static = static_encoder(static_graph.x, static_graph.edge_index)
 
+            # --- 以下を追加(仮) ---
+            B = snapshot.x.shape[0]
+            N = 10  # 仮の近傍数（論文もこれくらい）
+
+            # 各ユーザーの取引時刻（例：ランダム整数で代用）
+            t = torch.randint(0, 1000, (B,))  # [B]
+
+            # 各ユーザーが持つ近傍との取引時刻（仮に10個）
+            t_prime = torch.randint(0, 1000, (B, N))  # [B, N]
+
+            # semantic_feat: 時間的意味情報（祝日、週末など）をダミー化（例：8次元）
+            semantic_feat = torch.randn(B, N, 8)  # [B, N, d_se]
+
             # TGAT + GraphSAGE + Fusion + MLP
-            y_pred = model(snapshot, h_static).squeeze()
+            y_pred = model(snapshot, h_static, t, t_prime, semantic_feat).squeeze()
 
             loss = criterion(y_pred, y.squeeze())
             optimizer.zero_grad()
